@@ -1,0 +1,4 @@
+project_id = "lgxpopzppfumfuhniumc"
+
+[functions.notify-date-change]
+verify_jwt = true
