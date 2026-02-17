@@ -17,6 +17,7 @@ const AdminDashboard = lazy(() => import("./components/AdminDashboard").then(m =
 const AnalyticsPage = lazy(() => import("./components/AnalyticsPage").then(m => ({ default: m.AnalyticsPage })));
 const CalendarPage = lazy(() => import("./components/CalendarPage").then(m => ({ default: m.CalendarPage })));
 const PersonalTaskBoard = lazy(() => import("./components/PersonalTaskBoard").then(m => ({ default: m.PersonalTaskBoard })));
+const WorkOrderManagement = lazy(() => import("./components/WorkOrderManagement").then(m => ({ default: m.WorkOrderManagement })));
 
 const queryClient = new QueryClient();
 
@@ -86,6 +87,9 @@ const App = () => {
               } />
               <Route path="/calendar" element={
                 isAuthenticated ? <CalendarPage /> : <Navigate to="/auth" replace />
+              } />
+              <Route path="/work-orders" element={
+                isAuthenticated ? <WorkOrderManagement /> : <Navigate to="/auth" replace />
               } />
               <Route path="/tasks" element={
                 isAuthenticated ? <PersonalTaskBoard /> : <Navigate to="/auth" replace />

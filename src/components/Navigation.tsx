@@ -33,6 +33,14 @@ export const Navigation = ({ isLoggedIn, onLogout }: NavigationProps) => {
             Dashboard
           </button>
           <button
+            onClick={() => navigate("/work-orders")}
+            className={`text-sm font-semibold transition-colors duration-200 ${
+              location.pathname === "/work-orders" ? "nav-link-active" : "text-gray-500 hover:text-primary"
+            }`}
+          >
+            Work Orders
+          </button>
+          <button
             onClick={() => navigate("/analytics")}
             className={`text-sm font-semibold transition-colors duration-200 ${
               location.pathname === "/analytics" ? "nav-link-active" : "text-gray-500 hover:text-primary"
@@ -74,6 +82,9 @@ export const Navigation = ({ isLoggedIn, onLogout }: NavigationProps) => {
           <div className="flex md:hidden items-center gap-1">
             <Button size="sm" variant={location.pathname === "/admin" ? "default" : "ghost"} onClick={() => navigate("/admin")} className="h-9 w-9 p-0">
               <span className="material-symbols-outlined text-[20px]">dashboard</span>
+            </Button>
+            <Button size="sm" variant={location.pathname === "/work-orders" ? "default" : "ghost"} onClick={() => navigate("/work-orders")} className="h-9 w-9 p-0">
+              <span className="material-symbols-outlined text-[20px]">assignment</span>
             </Button>
             <Button size="sm" variant={location.pathname === "/analytics" ? "default" : "ghost"} onClick={() => navigate("/analytics")} className="h-9 w-9 p-0">
               <span className="material-symbols-outlined text-[20px]">bar_chart</span>
