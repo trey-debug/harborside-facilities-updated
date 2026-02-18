@@ -18,45 +18,25 @@ import {
 } from "@/lib/animations";
 import { AnimatedCard, StaggeredList, FloatingElement, PulseGlow } from "@/lib/animations";
 
-// ─── Harborside anchor logo ────────────────────────────────────────────────────
-// Colors sourced directly from harborsidechurch.org:
-//   #00AEEF = sky blue  |  #005373 = deep ocean teal
+// ─── Harborside logo ──────────────────────────────────────────────────────────
 const HarborsideLogo = () => (
-  <div className="flex flex-col items-center gap-2">
-    <motion.div
-      className="flex items-center justify-center w-24 h-24 rounded-3xl bg-white border border-[#00AEEF]/25"
-      style={{ boxShadow: "0 12px 40px rgba(0,174,239,0.20)" }}
-      animate={{ boxShadow: ["0 12px 40px rgba(0,174,239,0.15)", "0 16px 50px rgba(0,174,239,0.32)", "0 12px 40px rgba(0,174,239,0.15)"] }}
-      transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-    >
-      <svg width="54" height="54" viewBox="0 0 54 54" fill="none" aria-label="Harborside anchor logo">
-        {/* Ring at top */}
-        <circle cx="27" cy="7.5" r="4.5" stroke="#005373" strokeWidth="2.5"/>
-        {/* Vertical shaft */}
-        <line x1="27" y1="11.5" x2="27" y2="46" stroke="#005373" strokeWidth="3" strokeLinecap="round"/>
-        {/* Crossbar */}
-        <line x1="14" y1="21" x2="40" y2="21" stroke="#005373" strokeWidth="3" strokeLinecap="round"/>
-        {/* Anchor curved bottom */}
-        <path d="M10 42 C10 42 17 50 27 46 C37 50 44 42 44 42"
-              fill="none" stroke="#005373" strokeWidth="3" strokeLinecap="round"/>
-        {/* Fluke tips */}
-        <path d="M10 42 L13.5 37.5" stroke="#005373" strokeWidth="3" strokeLinecap="round"/>
-        <path d="M44 42 L40.5 37.5" stroke="#005373" strokeWidth="3" strokeLinecap="round"/>
-        {/* Wave accent in sky blue */}
-        <path d="M8 31.5 C13.5 28 20 34 27 32 C34 30 40.5 34 46 31.5"
-              fill="none" stroke="#00AEEF" strokeWidth="2.2" strokeLinecap="round"/>
-      </svg>
-    </motion.div>
-    {/* Wordmark */}
-    <div className="text-center leading-tight">
-      <p className="text-[13px] font-extrabold tracking-[0.22em] uppercase" style={{ color: "#005373" }}>
-        Harborside
-      </p>
-      <p className="text-[10px] font-semibold tracking-[0.14em] uppercase" style={{ color: "#00AEEF" }}>
-        Christian Church
-      </p>
-    </div>
-  </div>
+  <motion.div
+    animate={{
+      filter: [
+        "drop-shadow(0 8px 24px rgba(0,174,239,0.18))",
+        "drop-shadow(0 12px 36px rgba(0,174,239,0.34))",
+        "drop-shadow(0 8px 24px rgba(0,174,239,0.18))",
+      ],
+    }}
+    transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+  >
+    <img
+      src="/harborside-logo.png"
+      alt="Harborside Christian Church"
+      className="h-28 md:h-32 w-auto object-contain"
+      style={{ maxWidth: "260px" }}
+    />
+  </motion.div>
 );
 
 // ─── Animated wave layers (real SVG paths from harborsidechurch.org) ──────────
