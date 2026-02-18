@@ -1,11 +1,23 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import {
+  heroFadeIn,
+  staggerContainer,
+  staggerItem,
+  cardAppear,
+  buttonHover,
+  emptyStateIcon,
+  emptyStateFade,
+  emptyStateFadeItem,
+  pageTransition,
+} from "@/lib/animations";
+import { AnimatedCard, StaggeredList, FloatingElement, PulseGlow } from "@/lib/animations";
 
 interface StatusRequest {
   id: string;
@@ -90,48 +102,111 @@ const Index = () => {
   };
 
   const formatStatus = (status: string) =>
-    status.split("_").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    status.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
   const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
 
-  // Hero + search view
+  // ── Hero / search view ──────────────────────────────────────
   if (!hasSearched) {
     return (
-      <div className="min-h-[calc(100vh-73px)]">
+      <motion.div
+        className="min-h-[calc(100vh-73px)]"
+        variants={pageTransition}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
         <main className="flex-1 flex flex-col items-center justify-center relative px-4 py-20 bg-geometric">
           <div className="absolute inset-0 hero-gradient pointer-events-none" />
-          <div className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center gap-8">
-            <div className="flex items-center justify-center w-24 h-24 rounded-3xl bg-white shadow-xl shadow-primary/10 border border-primary/10">
-              <span className="material-symbols-outlined text-primary text-6xl" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}>
-                church
-              </span>
-            </div>
 
-            <div className="space-y-4">
-              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900 leading-[1.1]">
+          {/* Hero content */}
+          <motion.div
+            variants={heroFadeIn}
+            initial="initial"
+            animate="animate"
+            className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center gap-8"
+          >
+            {/* Logo icon – floats gently */}
+            <FloatingElement amplitude={8} duration={4}>
+              <PulseGlow color="#3B82F6" intensity={0.18}>
+                <div className="flex items-center justify-center w-24 h-24 rounded-3xl bg-white shadow-xl shadow-primary/10 border border-primary/10">
+                  <span
+                    className="material-symbols-outlined text-primary text-6xl"
+                    style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}
+                  >
+                    church
+                  </span>
+                </div>
+              </PulseGlow>
+            </FloatingElement>
+
+            {/* Heading + sub */}
+            <motion.div
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+              className="space-y-4"
+            >
+              <motion.h1
+                variants={staggerItem}
+                className="text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900 leading-[1.1]"
+              >
                 Harborside Facilities{" "}
                 <br className="hidden md:block" />
                 <span className="text-primary">Management</span>
-              </h1>
-              <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto font-medium">
-                Check the status of your work requests. Submit new requests and track maintenance in real-time.
-              </p>
-            </div>
+              </motion.h1>
 
-            {/* Status Check Card */}
-            <div className="w-full max-w-[600px] bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+              <motion.p
+                variants={staggerItem}
+                className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto font-medium"
+              >
+                Check the status of your work requests. Submit new requests and
+                track maintenance in real-time.
+              </motion.p>
+            </motion.div>
+
+            {/* Status check card */}
+            <motion.div
+              variants={cardAppear}
+              initial="initial"
+              animate="animate"
+              transition={{ delay: 0.35 }}
+              className="w-full max-w-[600px] bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden"
+            >
               <div className="p-8 md:p-12 flex flex-col items-center text-center">
-                <div className="mb-6 size-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                <motion.div
+                  animate={{ scale: [1, 1.06, 1] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                  className="mb-6 size-16 bg-primary/10 rounded-full flex items-center justify-center text-primary"
+                >
                   <span className="material-symbols-outlined text-4xl">search</span>
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Check Request Status</h2>
+                </motion.div>
+
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                  Check Request Status
+                </h2>
                 <p className="text-gray-500 text-base leading-relaxed mb-10 max-w-md">
-                  Enter the email address used to submit your facility maintenance or event request to see current progress.
+                  Enter the email address used to submit your facility maintenance
+                  or event request to see current progress.
                 </p>
+
                 <form onSubmit={handleCheckStatus} className="w-full space-y-6">
-                  <div className="text-left">
-                    <Label className="block text-sm font-semibold text-gray-700 mb-2 ml-1" htmlFor="email">
+                  <motion.div
+                    variants={staggerItem}
+                    initial="initial"
+                    animate="animate"
+                    transition={{ delay: 0.5 }}
+                    className="text-left"
+                  >
+                    <Label
+                      className="block text-sm font-semibold text-gray-700 mb-2 ml-1"
+                      htmlFor="email"
+                    >
                       Email Address
                     </Label>
                     <div className="relative group">
@@ -145,67 +220,160 @@ const Index = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         placeholder="e.g., name@church.org"
-                        className="pl-12 py-6 bg-gray-50 border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        className="pl-12 py-6 bg-gray-50 border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                       />
                     </div>
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full primary-gradient text-white font-bold py-6 rounded-lg shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+                  </motion.div>
+
+                  {/* Submit button with pulse glow */}
+                  <motion.div
+                    variants={staggerItem}
+                    initial="initial"
+                    animate="animate"
+                    transition={{ delay: 0.6 }}
                   >
-                    {isLoading ? (
-                      <>
-                        <span className="material-symbols-outlined animate-spin mr-2">progress_activity</span>
-                        Checking...
-                      </>
-                    ) : (
-                      <>
-                        Check Status
-                        <span className="material-symbols-outlined ml-2 text-xl">arrow_forward</span>
-                      </>
-                    )}
-                  </Button>
+                    <motion.div
+                      animate={
+                        !isLoading
+                          ? {
+                              boxShadow: [
+                                "0 4px 15px rgba(59,130,246,0.28)",
+                                "0 8px 28px rgba(59,130,246,0.48)",
+                                "0 4px 15px rgba(59,130,246,0.28)",
+                              ],
+                            }
+                          : {}
+                      }
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="rounded-lg"
+                    >
+                      <Button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full primary-gradient text-white font-bold py-6 rounded-lg transition-all active:scale-[0.98]"
+                      >
+                        {isLoading ? (
+                          <>
+                            <span className="material-symbols-outlined animate-spin mr-2">
+                              progress_activity
+                            </span>
+                            Checking...
+                          </>
+                        ) : (
+                          <>
+                            Check Status
+                            <span className="material-symbols-outlined ml-2 text-xl">
+                              arrow_forward
+                            </span>
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
+                  </motion.div>
                 </form>
-                <p className="mt-8 text-sm italic text-gray-400">
+
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.9 }}
+                  className="mt-8 text-sm italic text-gray-400"
+                >
                   We'll search our database for requests from this email
-                </p>
+                </motion.p>
               </div>
               <div className="h-1.5 w-full primary-gradient opacity-50" />
-            </div>
-          </div>
+            </motion.div>
+
+            {/* Submit new request CTA */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.75 }}
+            >
+              <Link to="/submit">
+                <motion.span
+                  variants={buttonHover}
+                  initial="rest"
+                  whileHover="hover"
+                  whileTap="tap"
+                  className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:underline cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                  Submit a new work request
+                </motion.span>
+              </Link>
+            </motion.div>
+          </motion.div>
         </main>
 
-        <div className="w-full px-10 py-10 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-gray-100 bg-white">
+        {/* Footer trust bar */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="w-full px-10 py-10 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-gray-100 bg-white"
+        >
           <div className="flex items-center gap-8">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-xl">verified</span>
-              <span className="text-sm font-semibold text-gray-500">Secure Access</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-xl">update</span>
-              <span className="text-sm font-semibold text-gray-500">Real-time Tracking</span>
-            </div>
+            {[
+              { icon: "verified", label: "Secure Access" },
+              { icon: "update", label: "Real-time Tracking" },
+            ].map(({ icon, label }) => (
+              <div key={label} className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-xl">
+                  {icon}
+                </span>
+                <span className="text-sm font-semibold text-gray-500">{label}</span>
+              </div>
+            ))}
           </div>
-          <p className="text-gray-400 text-sm font-medium">Harborside Church. All facilities maintained with care.</p>
-        </div>
-      </div>
+          <p className="text-gray-400 text-sm font-medium">
+            Harborside Church. All facilities maintained with care.
+          </p>
+        </motion.div>
+      </motion.div>
     );
   }
 
-  // Results view
+  // ── Results view ─────────────────────────────────────────────
   return (
-    <div className="min-h-[calc(100vh-73px)] bg-background p-4 md:p-8">
+    <motion.div
+      className="min-h-[calc(100vh-73px)] bg-background p-4 md:p-8"
+      variants={pageTransition}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
+        {/* Header row */}
+        <motion.div
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+          className="flex items-center justify-between mb-6"
+        >
+          <motion.div variants={staggerItem} className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-gray-900">Your Requests</h2>
-            <span className="bg-primary/10 text-primary text-sm font-bold px-3 py-1 rounded-full">
-              {requests.length}
-            </span>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => { setHasSearched(false); setRequests([]); setEmail(""); }}>
+            <AnimatePresence>
+              <motion.span
+                key={requests.length}
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="bg-primary/10 text-primary text-sm font-bold px-3 py-1 rounded-full"
+              >
+                {requests.length}
+              </motion.span>
+            </AnimatePresence>
+          </motion.div>
+
+          <motion.div variants={staggerItem} className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setHasSearched(false);
+                setRequests([]);
+                setEmail("");
+              }}
+            >
               <span className="material-symbols-outlined text-[18px] mr-1">arrow_back</span>
               Back
             </Button>
@@ -215,106 +383,198 @@ const Index = () => {
                 New Request
               </Button>
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
+        {/* Empty state */}
         {requests.length === 0 && (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-16 text-center">
-            <div className="size-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="material-symbols-outlined text-gray-300 text-5xl">description</span>
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Requests Found</h3>
-            <p className="text-gray-500 mb-2 max-w-md mx-auto">
-              We couldn't find any work requests associated with this email address.
-            </p>
-            <p className="text-sm italic text-gray-400 mb-8">
-              Make sure you're using the same email you submitted your request with.
-            </p>
-            <Link to="/submit">
-              <Button className="primary-gradient text-white font-bold shadow-lg shadow-primary/20">
-                <span className="material-symbols-outlined text-[20px] mr-2">add_circle</span>
-                Submit New Request
-              </Button>
-            </Link>
-          </div>
-        )}
-
-        <div className="space-y-4">
-          {requests.map((request) => (
-            <Card key={request.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-primary uppercase tracking-wide">
-                      {request.work_order_id}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      Submitted {formatDate(request.created_at)}
-                    </span>
-                  </div>
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${getStatusBadge(request.status)}`}>
-                    {request.status === "completed" && <span className="material-symbols-outlined text-[16px]">check_circle</span>}
-                    {request.status === "rejected" && <span className="material-symbols-outlined text-[16px]">cancel</span>}
-                    {request.status === "pending" && <span className="material-symbols-outlined text-[16px]">schedule</span>}
-                    {request.status === "in_progress" && <span className="material-symbols-outlined text-[16px]">sync</span>}
-                    {formatStatus(request.status)}
+          <motion.div
+            variants={emptyStateFade}
+            initial="initial"
+            animate="animate"
+            className="bg-white rounded-xl border border-gray-100 shadow-sm p-16 text-center"
+          >
+            <motion.div variants={emptyStateFadeItem} className="mx-auto mb-6 w-fit">
+              <FloatingElement amplitude={8} duration={3.5}>
+                <div className="size-20 bg-gray-50 rounded-full flex items-center justify-center">
+                  <span className="material-symbols-outlined text-gray-300 text-5xl">
+                    description
                   </span>
                 </div>
+              </FloatingElement>
+            </motion.div>
 
-                <h3 className="text-lg font-bold text-gray-900 mb-4">{request.title}</h3>
+            <motion.h3
+              variants={emptyStateFadeItem}
+              className="text-xl font-bold text-gray-900 mb-2"
+            >
+              No Requests Found
+            </motion.h3>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div>
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Department</p>
-                    <p className="text-sm font-semibold text-gray-700 capitalize">{request.department}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Priority</p>
-                    <div className="flex items-center gap-2">
-                      <div className={`size-2 rounded-full ${getPriorityDot(request.priority)}`} />
-                      <p className="text-sm font-semibold text-gray-700 capitalize">{request.priority}</p>
+            <motion.p
+              variants={emptyStateFadeItem}
+              className="text-gray-500 mb-2 max-w-md mx-auto"
+            >
+              We couldn't find any work requests associated with this email address.
+            </motion.p>
+
+            <motion.p
+              variants={emptyStateFadeItem}
+              className="text-sm italic text-gray-400 mb-8"
+            >
+              Make sure you're using the same email you submitted your request with.
+            </motion.p>
+
+            <motion.div variants={emptyStateFadeItem}>
+              <Link to="/submit">
+                <Button className="primary-gradient text-white font-bold shadow-lg shadow-primary/20">
+                  <span className="material-symbols-outlined text-[20px] mr-2">
+                    add_circle
+                  </span>
+                  Submit New Request
+                </Button>
+              </Link>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Results list */}
+        {requests.length > 0 && (
+          <StaggeredList className="space-y-4">
+            {requests.map((request) => (
+              <AnimatedCard
+                key={request.id}
+                hover
+                className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-primary uppercase tracking-wide">
+                        {request.work_order_id}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        Submitted {formatDate(request.created_at)}
+                      </span>
                     </div>
+
+                    {/* Status badge – pulse on pending */}
+                    {request.status === "pending" ? (
+                      <PulseGlow color="#F59E0B" intensity={0.25}>
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${getStatusBadge(
+                            request.status
+                          )}`}
+                        >
+                          <span className="material-symbols-outlined text-[16px]">schedule</span>
+                          {formatStatus(request.status)}
+                        </span>
+                      </PulseGlow>
+                    ) : (
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${getStatusBadge(
+                          request.status
+                        )}`}
+                      >
+                        {request.status === "completed" && (
+                          <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                        )}
+                        {request.status === "rejected" && (
+                          <span className="material-symbols-outlined text-[16px]">cancel</span>
+                        )}
+                        {request.status === "in_progress" && (
+                          <span className="material-symbols-outlined text-[16px]">sync</span>
+                        )}
+                        {formatStatus(request.status)}
+                      </span>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Requested Date</p>
-                    <p className="text-sm font-semibold text-gray-700">{formatDate(request.requested_date)}</p>
-                  </div>
-                  {request.completed_at && (
+
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">{request.title}</h3>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Completed</p>
-                      <p className="text-sm font-semibold text-gray-700">{formatDate(request.completed_at)}</p>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                        Department
+                      </p>
+                      <p className="text-sm font-semibold text-gray-700 capitalize">
+                        {request.department}
+                      </p>
                     </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                        Priority
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <div className={`size-2 rounded-full ${getPriorityDot(request.priority)}`} />
+                        <p className="text-sm font-semibold text-gray-700 capitalize">
+                          {request.priority}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                        Requested Date
+                      </p>
+                      <p className="text-sm font-semibold text-gray-700">
+                        {formatDate(request.requested_date)}
+                      </p>
+                    </div>
+                    {request.completed_at && (
+                      <div>
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                          Completed
+                        </p>
+                        <p className="text-sm font-semibold text-gray-700">
+                          {formatDate(request.completed_at)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {request.status === "completed" && request.completion_notes && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="bg-green-50 border border-green-100 rounded-lg p-4 flex gap-3"
+                    >
+                      <span className="material-symbols-outlined text-green-600 text-[20px] mt-0.5">
+                        task_alt
+                      </span>
+                      <div>
+                        <p className="text-sm font-bold text-green-800 mb-1">Completion Notes</p>
+                        <p className="text-sm text-green-700">{request.completion_notes}</p>
+                        {request.actual_hours && (
+                          <p className="text-xs text-green-600 mt-1">
+                            Actual hours: {request.actual_hours}h
+                          </p>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {request.status === "rejected" && request.rejected_reason && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="bg-red-50 border border-red-100 rounded-lg p-4 flex gap-3"
+                    >
+                      <span className="material-symbols-outlined text-red-600 text-[20px] mt-0.5">
+                        error
+                      </span>
+                      <div>
+                        <p className="text-sm font-bold text-red-800 mb-1">Rejection Reason</p>
+                        <p className="text-sm text-red-700">{request.rejected_reason}</p>
+                      </div>
+                    </motion.div>
                   )}
                 </div>
-
-                {request.status === "completed" && request.completion_notes && (
-                  <div className="bg-green-50 border border-green-100 rounded-lg p-4 flex gap-3">
-                    <span className="material-symbols-outlined text-green-600 text-[20px] mt-0.5">task_alt</span>
-                    <div>
-                      <p className="text-sm font-bold text-green-800 mb-1">Completion Notes</p>
-                      <p className="text-sm text-green-700">{request.completion_notes}</p>
-                      {request.actual_hours && (
-                        <p className="text-xs text-green-600 mt-1">Actual hours: {request.actual_hours}h</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {request.status === "rejected" && request.rejected_reason && (
-                  <div className="bg-red-50 border border-red-100 rounded-lg p-4 flex gap-3">
-                    <span className="material-symbols-outlined text-red-600 text-[20px] mt-0.5">error</span>
-                    <div>
-                      <p className="text-sm font-bold text-red-800 mb-1">Rejection Reason</p>
-                      <p className="text-sm text-red-700">{request.rejected_reason}</p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </AnimatedCard>
+            ))}
+          </StaggeredList>
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
