@@ -20,71 +20,80 @@ import { AnimatedCard, StaggeredList, FloatingElement, PulseGlow } from "@/lib/a
 
 // ─── Harborside logo ──────────────────────────────────────────────────────────
 const HarborsideLogo = () => (
-  <motion.div
-    animate={{
-      filter: [
-        "drop-shadow(0 8px 24px rgba(0,174,239,0.18))",
-        "drop-shadow(0 12px 36px rgba(0,174,239,0.34))",
-        "drop-shadow(0 8px 24px rgba(0,174,239,0.18))",
-      ],
-    }}
-    transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-  >
-    <img
-      src="/harborside-logo.png"
-      alt="Harborside Christian Church"
-      className="h-28 md:h-32 w-auto object-contain"
-      style={{ maxWidth: "260px" }}
-    />
-  </motion.div>
+  <img
+    src="/harborside-logo.png"
+    alt="Harborside Christian Church"
+    className="h-24 md:h-28 w-auto object-contain"
+    style={{ maxWidth: "240px", mixBlendMode: "multiply" }}
+  />
 );
 
 // ─── Animated wave layers (real SVG paths from harborsidechurch.org) ──────────
-// Back wave:  #00AEEF sky blue  — 1443×192 viewBox, slower + higher
-// Front wave: #005373 ocean teal — 1443×217 viewBox, faster + ground level
 // Seamless loop: two copies of each path tiled horizontally.
 // animate x: 0→-50% shifts one full pattern width, then loops invisibly.
+// Footer text is overlaid on the solid teal front-wave band at the bottom.
 const AnimatedWaves = () => (
   <div
-    className="relative overflow-hidden flex-shrink-0 -mt-20 z-10"
-    style={{ height: "220px" }}
-    aria-hidden="true"
+    className="relative overflow-hidden flex-shrink-0 -mt-16 md:-mt-20 z-10 h-[180px] md:h-[240px]"
   >
-    {/* Gradient backdrop: transparent top → Harborside teal bottom */}
-    <div
-      className="absolute inset-0 pointer-events-none"
-      style={{
-        background:
-          "linear-gradient(to bottom, transparent 0%, rgba(0,174,239,0.10) 40%, rgba(0,83,115,0.18) 100%)",
-      }}
-    />
+    {/* Waves — decorative, hidden from a11y tree */}
+    <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+      {/* Gradient backdrop */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to bottom, transparent 0%, rgba(0,174,239,0.10) 40%, rgba(0,83,115,0.18) 100%)",
+        }}
+      />
 
-    {/* Back wave — lighter, slower, floats 28 px above ground */}
-    <div className="absolute left-0 right-0 overflow-hidden" style={{ bottom: "28px", height: "192px" }}>
-      <motion.div
-        style={{ width: "200%" }}
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
-      >
-        <svg width="100%" viewBox="0 0 2886 192" preserveAspectRatio="none" fill="none">
-          <path d="M1109.5 28.1197C730.626 101.739 259.53 59.5946 0 11.0971V192H1443V11.0971C1330.5 -6.89309 1275.99 -4.23195 1109.5 28.1197Z" fill="#00AEEF" fillOpacity="0.42"/>
-          <path d="M2552.5 28.1197C2173.626 101.739 1702.53 59.5946 1443 11.0971V192H2886V11.0971C2773.5 -6.89309 2718.99 -4.23195 2552.5 28.1197Z" fill="#00AEEF" fillOpacity="0.42"/>
-        </svg>
-      </motion.div>
+      {/* Back wave — #00AEEF sky blue, slower */}
+      <div className="absolute left-0 right-0 overflow-hidden bottom-[20px] md:bottom-[28px] h-[140px] md:h-[192px]">
+        <motion.div
+          style={{ width: "200%" }}
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
+        >
+          <svg width="100%" viewBox="0 0 2886 192" preserveAspectRatio="none" fill="none">
+            <path d="M1109.5 28.1197C730.626 101.739 259.53 59.5946 0 11.0971V192H1443V11.0971C1330.5 -6.89309 1275.99 -4.23195 1109.5 28.1197Z" fill="#00AEEF" fillOpacity="0.42"/>
+            <path d="M2552.5 28.1197C2173.626 101.739 1702.53 59.5946 1443 11.0971V192H2886V11.0971C2773.5 -6.89309 2718.99 -4.23195 2552.5 28.1197Z" fill="#00AEEF" fillOpacity="0.42"/>
+          </svg>
+        </motion.div>
+      </div>
+
+      {/* Front wave — #005373 ocean teal, faster */}
+      <div className="absolute bottom-0 left-0 right-0 overflow-hidden h-[140px] md:h-[180px]">
+        <motion.div
+          style={{ width: "200%" }}
+          animate={{ x: ["-50%", "0%"] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+        >
+          <svg width="100%" viewBox="0 0 2886 217" preserveAspectRatio="none" fill="none">
+            <path d="M598.5 76.0946C308.477 169.927 97.5413 117.634 0 97V217H1443V97C1443 97 1340.5 76.0947 1226.5 42.2082C1102.01 5.20478 970.5 -44.2605 598.5 76.0946Z" fill="#005373" fillOpacity="0.82"/>
+            <path d="M2041.5 76.0946C1751.477 169.927 1540.541 117.634 1443 97V217H2886V97C2886 97 2783.5 76.0947 2669.5 42.2082C2545.01 5.20478 2413.5 -44.2605 2041.5 76.0946Z" fill="#005373" fillOpacity="0.82"/>
+          </svg>
+        </motion.div>
+      </div>
     </div>
 
-    {/* Front wave — darker, faster, sits at ground level */}
-    <div className="absolute bottom-0 left-0 right-0 overflow-hidden" style={{ height: "217px" }}>
-      <motion.div
-        style={{ width: "200%" }}
-        animate={{ x: ["-50%", "0%"] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-      >
-        <svg width="100%" viewBox="0 0 2886 217" preserveAspectRatio="none" fill="none">
-          <path d="M598.5 76.0946C308.477 169.927 97.5413 117.634 0 97V217H1443V97C1443 97 1340.5 76.0947 1226.5 42.2082C1102.01 5.20478 970.5 -44.2605 598.5 76.0946Z" fill="#005373" fillOpacity="0.82"/>
-          <path d="M2041.5 76.0946C1751.477 169.927 1540.541 117.634 1443 97V217H2886V97C2886 97 2783.5 76.0947 2669.5 42.2082C2545.01 5.20478 2413.5 -44.2605 2041.5 76.0946Z" fill="#005373" fillOpacity="0.82"/>
-        </svg>
-      </motion.div>
+    {/* Footer text — overlaid on the solid teal band */}
+    <div className="absolute bottom-0 left-0 right-0 z-10 pb-3 md:pb-5 flex flex-col items-center gap-1.5">
+      <div className="flex items-center justify-center gap-4 md:gap-8 flex-wrap px-4">
+        {[
+          { icon: "verified", label: "Secure Access" },
+          { icon: "update", label: "Real-time Tracking" },
+        ].map(({ icon, label }) => (
+          <div key={label} className="flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-white/85 text-[16px] md:text-[18px]">
+              {icon}
+            </span>
+            <span className="text-white/85 text-[11px] md:text-xs font-semibold">{label}</span>
+          </div>
+        ))}
+      </div>
+      <p className="text-white/50 text-[10px] md:text-[11px] font-medium px-4 text-center">
+        Harborside Church · All facilities maintained with care.
+      </p>
     </div>
   </div>
 );
@@ -201,10 +210,8 @@ const Index = () => {
             animate="animate"
             className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center gap-8"
           >
-            {/* Harborside logo – floats gently */}
-            <FloatingElement amplitude={7} duration={4.5}>
-              <HarborsideLogo />
-            </FloatingElement>
+            {/* Harborside logo */}
+            <HarborsideLogo />
 
             {/* Heading + sub */}
             <motion.div
@@ -367,34 +374,8 @@ const Index = () => {
           </motion.div>
         </main>
 
-        {/* ── Harborside animated waves ── */}
+        {/* ── Harborside animated waves + footer text ── */}
         <AnimatedWaves />
-
-        {/* Footer trust bar */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="w-full px-10 py-10 flex flex-col md:flex-row justify-between items-center gap-6 bg-white border-t border-[#005373]/15"
-          style={{ borderTopColor: "rgba(0,83,115,0.12)" }}
-        >
-          <div className="flex items-center gap-8">
-            {[
-              { icon: "verified", label: "Secure Access" },
-              { icon: "update", label: "Real-time Tracking" },
-            ].map(({ icon, label }) => (
-              <div key={label} className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-xl">
-                  {icon}
-                </span>
-                <span className="text-sm font-semibold text-gray-500">{label}</span>
-              </div>
-            ))}
-          </div>
-          <p className="text-gray-400 text-sm font-medium">
-            Harborside Church. All facilities maintained with care.
-          </p>
-        </motion.div>
       </motion.div>
     );
   }
