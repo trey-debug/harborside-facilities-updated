@@ -144,26 +144,26 @@ const Index = () => {
     setHasSearched(true);
 
     try {
+      // Use the SECURITY DEFINER RPC so unauthenticated users can query
+      // their own requests without being blocked by Row Level Security.
+      // The function also normalises case so the email match is case-insensitive.
       const { data, error } = await supabase
-        .from("work_requests")
-        .select("*")
-        .eq("requestor_email", email.trim())
-        .order("created_at", { ascending: false });
+        .rpc("get_work_requests_by_email", { _email: email.trim().toLowerCase() });
 
       if (error) throw error;
-      setRequests(data || []);
+      setRequests((data as StatusRequest[]) || []);
 
       if (!data || data.length === 0) {
         toast({
           title: "No requests found",
-          description: "No work requests found for this email address.",
+          description: "No work requests were found for that email address. Make sure it matches the email you used when submitting.",
         });
       }
-    } catch (error) {
-      console.error("Error fetching requests:", error);
+    } catch (err) {
+      console.error("Error fetching requests:", err);
       toast({
         title: "Error",
-        description: "Failed to fetch your requests. Please try again.",
+        description: err instanceof Error ? err.message : "Failed to fetch your requests. Please try again.",
         variant: "destructive",
       });
     } finally {

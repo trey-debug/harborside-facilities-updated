@@ -211,6 +211,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_work_requests_by_email: {
+        Args: { _email: string }
+        Returns: Database["public"]["Tables"]["work_requests"]["Row"][]
+      }
       approve_work_request: {
         Args: { _approved_by_user: string; _request_id: string }
         Returns: string

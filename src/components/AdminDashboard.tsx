@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -102,11 +102,7 @@ export const AdminDashboard = () => {
   const { toast } = useToast();
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    fetchWorkRequests();
-  }, []);
-
-  const fetchWorkRequests = async () => {
+  const fetchWorkRequests = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('work_requests')
@@ -123,7 +119,34 @@ export const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  // Initial load
+  useEffect(() => { fetchWorkRequests(); }, [fetchWorkRequests]);
+
+  // Realtime subscription — updates the list whenever any row changes in the DB
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin_dashboard_work_requests")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "work_requests" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setRequests(prev => [payload.new as WorkRequest, ...prev]);
+          } else if (payload.eventType === "UPDATE") {
+            setRequests(prev =>
+              prev.map(r => r.id === (payload.new as WorkRequest).id ? payload.new as WorkRequest : r)
+            );
+          } else if (payload.eventType === "DELETE") {
+            setRequests(prev => prev.filter(r => r.id !== (payload.old as { id: string }).id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   const pendingCount = requests.filter(r => r.status === "pending").length;
   const activeCount = requests.filter(r => r.status === "approved" || r.status === "in_progress").length;
@@ -389,15 +412,15 @@ export const AdminDashboard = () => {
               <h2 className="text-3xl font-extrabold text-gray-900">Facilities Overview</h2>
               <p className="text-gray-500 mt-1">Manage Harborside church work requests and maintenance activities.</p>
             </div>
-            <div className="flex gap-3">
-              <button
-                onClick={fetchWorkRequests}
-                disabled={loading}
-                className="flex items-center gap-2 h-10 px-4 rounded-lg bg-white border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 transition-colors"
-              >
-                <span className={`material-symbols-outlined text-lg ${loading ? 'animate-spin' : ''}`}>refresh</span>
-                Refresh
-              </button>
+            <div className="flex gap-3 items-center">
+              {/* Live indicator — shows realtime is active */}
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-green-600 bg-green-50 border border-green-200 px-3 py-2 rounded-lg">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                </span>
+                Live
+              </div>
               <button
                 onClick={() => navigate("/submit")}
                 className="flex items-center gap-2 h-10 px-4 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 shadow-lg shadow-primary/20"
