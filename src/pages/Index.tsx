@@ -19,13 +19,25 @@ import {
 import { AnimatedCard, StaggeredList, FloatingElement, PulseGlow } from "@/lib/animations";
 
 // ─── Harborside logo ──────────────────────────────────────────────────────────
+// isolation:isolate creates a new stacking context so mix-blend-mode:multiply
+// on the <img> blends ONLY against the wrapper's solid background (matching the
+// page colour) — not against the dot pattern or any other layer.
+// white × hsl(210 20% 97%) = hsl(210 20% 97%) → white areas become invisible.
 const HarborsideLogo = () => (
-  <img
-    src="/harborside-logo.png"
-    alt="Harborside Christian Church"
-    className="h-24 md:h-28 w-auto object-contain"
-    style={{ maxWidth: "240px", mixBlendMode: "multiply" }}
-  />
+  <div
+    className="inline-flex"
+    style={{
+      background: "hsl(210, 20%, 97%)",
+      isolation: "isolate",
+    }}
+  >
+    <img
+      src="/harborside-logo.png"
+      alt="Harborside Christian Church"
+      className="h-24 md:h-28 w-auto object-contain"
+      style={{ maxWidth: "240px", mixBlendMode: "multiply" }}
+    />
+  </div>
 );
 
 // ─── Animated wave layers (real SVG paths from harborsidechurch.org) ──────────
