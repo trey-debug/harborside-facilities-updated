@@ -12,12 +12,102 @@ import {
   staggerItem,
   cardAppear,
   buttonHover,
-  emptyStateIcon,
   emptyStateFade,
   emptyStateFadeItem,
   pageTransition,
 } from "@/lib/animations";
 import { AnimatedCard, StaggeredList, FloatingElement, PulseGlow } from "@/lib/animations";
+
+// ─── Harborside anchor logo ────────────────────────────────────────────────────
+// Colors sourced directly from harborsidechurch.org:
+//   #00AEEF = sky blue  |  #005373 = deep ocean teal
+const HarborsideLogo = () => (
+  <div className="flex flex-col items-center gap-2">
+    <motion.div
+      className="flex items-center justify-center w-24 h-24 rounded-3xl bg-white border border-[#00AEEF]/25"
+      style={{ boxShadow: "0 12px 40px rgba(0,174,239,0.20)" }}
+      animate={{ boxShadow: ["0 12px 40px rgba(0,174,239,0.15)", "0 16px 50px rgba(0,174,239,0.32)", "0 12px 40px rgba(0,174,239,0.15)"] }}
+      transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <svg width="54" height="54" viewBox="0 0 54 54" fill="none" aria-label="Harborside anchor logo">
+        {/* Ring at top */}
+        <circle cx="27" cy="7.5" r="4.5" stroke="#005373" strokeWidth="2.5"/>
+        {/* Vertical shaft */}
+        <line x1="27" y1="11.5" x2="27" y2="46" stroke="#005373" strokeWidth="3" strokeLinecap="round"/>
+        {/* Crossbar */}
+        <line x1="14" y1="21" x2="40" y2="21" stroke="#005373" strokeWidth="3" strokeLinecap="round"/>
+        {/* Anchor curved bottom */}
+        <path d="M10 42 C10 42 17 50 27 46 C37 50 44 42 44 42"
+              fill="none" stroke="#005373" strokeWidth="3" strokeLinecap="round"/>
+        {/* Fluke tips */}
+        <path d="M10 42 L13.5 37.5" stroke="#005373" strokeWidth="3" strokeLinecap="round"/>
+        <path d="M44 42 L40.5 37.5" stroke="#005373" strokeWidth="3" strokeLinecap="round"/>
+        {/* Wave accent in sky blue */}
+        <path d="M8 31.5 C13.5 28 20 34 27 32 C34 30 40.5 34 46 31.5"
+              fill="none" stroke="#00AEEF" strokeWidth="2.2" strokeLinecap="round"/>
+      </svg>
+    </motion.div>
+    {/* Wordmark */}
+    <div className="text-center leading-tight">
+      <p className="text-[13px] font-extrabold tracking-[0.22em] uppercase" style={{ color: "#005373" }}>
+        Harborside
+      </p>
+      <p className="text-[10px] font-semibold tracking-[0.14em] uppercase" style={{ color: "#00AEEF" }}>
+        Christian Church
+      </p>
+    </div>
+  </div>
+);
+
+// ─── Animated wave layers (real SVG paths from harborsidechurch.org) ──────────
+// Back wave:  #00AEEF sky blue  — 1443×192 viewBox, slower + higher
+// Front wave: #005373 ocean teal — 1443×217 viewBox, faster + ground level
+// Seamless loop: two copies of each path tiled horizontally.
+// animate x: 0→-50% shifts one full pattern width, then loops invisibly.
+const AnimatedWaves = () => (
+  <div
+    className="relative overflow-hidden flex-shrink-0 -mt-20 z-10"
+    style={{ height: "220px" }}
+    aria-hidden="true"
+  >
+    {/* Gradient backdrop: transparent top → Harborside teal bottom */}
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        background:
+          "linear-gradient(to bottom, transparent 0%, rgba(0,174,239,0.10) 40%, rgba(0,83,115,0.18) 100%)",
+      }}
+    />
+
+    {/* Back wave — lighter, slower, floats 28 px above ground */}
+    <div className="absolute left-0 right-0 overflow-hidden" style={{ bottom: "28px", height: "192px" }}>
+      <motion.div
+        style={{ width: "200%" }}
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
+      >
+        <svg width="100%" viewBox="0 0 2886 192" preserveAspectRatio="none" fill="none">
+          <path d="M1109.5 28.1197C730.626 101.739 259.53 59.5946 0 11.0971V192H1443V11.0971C1330.5 -6.89309 1275.99 -4.23195 1109.5 28.1197Z" fill="#00AEEF" fillOpacity="0.42"/>
+          <path d="M2552.5 28.1197C2173.626 101.739 1702.53 59.5946 1443 11.0971V192H2886V11.0971C2773.5 -6.89309 2718.99 -4.23195 2552.5 28.1197Z" fill="#00AEEF" fillOpacity="0.42"/>
+        </svg>
+      </motion.div>
+    </div>
+
+    {/* Front wave — darker, faster, sits at ground level */}
+    <div className="absolute bottom-0 left-0 right-0 overflow-hidden" style={{ height: "217px" }}>
+      <motion.div
+        style={{ width: "200%" }}
+        animate={{ x: ["-50%", "0%"] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+      >
+        <svg width="100%" viewBox="0 0 2886 217" preserveAspectRatio="none" fill="none">
+          <path d="M598.5 76.0946C308.477 169.927 97.5413 117.634 0 97V217H1443V97C1443 97 1340.5 76.0947 1226.5 42.2082C1102.01 5.20478 970.5 -44.2605 598.5 76.0946Z" fill="#005373" fillOpacity="0.82"/>
+          <path d="M2041.5 76.0946C1751.477 169.927 1540.541 117.634 1443 97V217H2886V97C2886 97 2783.5 76.0947 2669.5 42.2082C2545.01 5.20478 2413.5 -44.2605 2041.5 76.0946Z" fill="#005373" fillOpacity="0.82"/>
+        </svg>
+      </motion.div>
+    </div>
+  </div>
+);
 
 interface StatusRequest {
   id: string;
@@ -115,7 +205,7 @@ const Index = () => {
   if (!hasSearched) {
     return (
       <motion.div
-        className="min-h-[calc(100vh-73px)]"
+        className="min-h-[calc(100vh-73px)] flex flex-col"
         variants={pageTransition}
         initial="initial"
         animate="animate"
@@ -131,18 +221,9 @@ const Index = () => {
             animate="animate"
             className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center gap-8"
           >
-            {/* Logo icon – floats gently */}
-            <FloatingElement amplitude={8} duration={4}>
-              <PulseGlow color="#3B82F6" intensity={0.18}>
-                <div className="flex items-center justify-center w-24 h-24 rounded-3xl bg-white shadow-xl shadow-primary/10 border border-primary/10">
-                  <span
-                    className="material-symbols-outlined text-primary text-6xl"
-                    style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}
-                  >
-                    church
-                  </span>
-                </div>
-              </PulseGlow>
+            {/* Harborside logo – floats gently */}
+            <FloatingElement amplitude={7} duration={4.5}>
+              <HarborsideLogo />
             </FloatingElement>
 
             {/* Heading + sub */}
@@ -306,12 +387,16 @@ const Index = () => {
           </motion.div>
         </main>
 
+        {/* ── Harborside animated waves ── */}
+        <AnimatedWaves />
+
         {/* Footer trust bar */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="w-full px-10 py-10 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-gray-100 bg-white"
+          className="w-full px-10 py-10 flex flex-col md:flex-row justify-between items-center gap-6 bg-white border-t border-[#005373]/15"
+          style={{ borderTopColor: "rgba(0,83,115,0.12)" }}
         >
           <div className="flex items-center gap-8">
             {[
