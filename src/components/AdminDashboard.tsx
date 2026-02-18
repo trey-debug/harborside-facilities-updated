@@ -130,79 +130,79 @@ export const AdminDashboard = () => {
   const completedCount = requests.filter(r => r.status === "completed").length;
   const highPriorityCount = requests.filter(r => r.priority === "high" || r.priority === "emergency").length;
 
-  const updateWorkRequestStatus = async (id: string, status: 'approved' | 'rejected' | 'in_progress' | 'paused' | 'completed', options?: {
-    reason?: string;
-    hours?: number;
-    notes?: string;
-    newDate?: Date;
-    dateChangeReason?: string;
-    checklist?: Array<{ id: string; text: string; completed: boolean }>;
-  }) => {
+  // All status mutations go through SECURITY DEFINER RPC functions so they
+  // work correctly even when Supabase RLS blocks direct table updates.
+
+  const approveRequest = async (id: string, newDate?: Date, dateChangeReason?: string, checklist?: Array<{ id: string; text: string; completed: boolean }>) => {
     try {
-      const updateData: Record<string, unknown> = {
-        status,
-        updated_at: new Date().toISOString(),
-      };
+      const req = requests.find(r => r.id === id);
+      const newDateStr = newDate ? format(newDate, 'yyyy-MM-dd') : undefined;
+      const dateChanged = newDateStr && req && newDateStr !== req.requested_date;
 
-      if (options?.newDate && options?.dateChangeReason) {
-        updateData.requested_date = format(options.newDate, 'yyyy-MM-dd');
-        updateData.date_changed_reason = options.dateChangeReason;
-      } else if (options?.newDate) {
-        updateData.requested_date = format(options.newDate, 'yyyy-MM-dd');
+      if (dateChanged && dateChangeReason) {
+        const { error } = await supabase.rpc("update_work_request_status", {
+          _request_id: id, _status: "approved", _user_name: "Admin",
+          _reason: dateChangeReason, _new_requested_date: newDateStr,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.rpc("approve_work_request", {
+          _request_id: id, _approved_by_user: "Admin",
+        });
+        if (error) throw error;
       }
 
-      if (options?.checklist && status === 'approved') {
-        updateData.approval_checklist = JSON.stringify(options.checklist);
+      if (checklist && checklist.length > 0) {
+        await supabase.from("work_requests").update({ approval_checklist: checklist }).eq("id", id);
       }
 
-      if (status === 'approved') {
-        updateData.approved_by = 'admin-dashboard';
-        updateData.approved_at = new Date().toISOString();
-      } else if (status === 'rejected') {
-        updateData.rejected_by = 'admin-dashboard';
-        updateData.rejected_at = new Date().toISOString();
-        updateData.rejected_reason = options?.reason || null;
-      } else if (status === 'in_progress') {
-        updateData.started_by = 'admin-dashboard';
-        updateData.started_at = new Date().toISOString();
-      } else if (status === 'completed') {
-        updateData.completed_by = 'admin-dashboard';
-        updateData.completed_at = new Date().toISOString();
-        updateData.actual_hours = options?.hours || null;
-        updateData.completion_notes = options?.notes || null;
-      }
-
-      const { error } = await supabase
-        .from('work_requests')
-        .update(updateData)
-        .eq('id', id);
-
-      if (error) {
-        toast({ title: 'Status update failed', description: error.message, variant: 'destructive' });
-        return;
-      }
-
-      const statusMessages: Record<string, string> = {
-        approved: 'Request approved successfully',
-        rejected: 'Request rejected',
-        in_progress: 'Work started',
-        paused: 'Work paused',
-        completed: 'Work completed'
-      };
-
-      toast({ title: 'Success', description: statusMessages[status] });
+      toast({ title: "Approved", description: "Request approved successfully" });
       await fetchWorkRequests();
     } catch (e: unknown) {
-      toast({ title: 'Status update failed', description: String(e), variant: 'destructive' });
+      toast({ title: "Approval failed", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     }
   };
 
-  const approveRequest = (id: string, newDate?: Date, dateChangeReason?: string, checklist?: Array<{ id: string; text: string; completed: boolean }>) =>
-    updateWorkRequestStatus(id, 'approved', { newDate, dateChangeReason, checklist });
-  const rejectRequest = (id: string, reason?: string) => updateWorkRequestStatus(id, 'rejected', { reason });
-  const startWork = (id: string) => updateWorkRequestStatus(id, 'in_progress');
-  const completeWork = (id: string, hours: number, notes: string) =>
-    updateWorkRequestStatus(id, 'completed', { hours, notes });
+  const rejectRequest = async (id: string, reason?: string) => {
+    try {
+      const { error } = await supabase.rpc("update_work_request_status", {
+        _request_id: id, _status: "rejected",
+        _user_name: "Admin", _reason: reason || "Rejected by admin",
+      });
+      if (error) throw error;
+      toast({ title: "Rejected", description: "Request has been rejected" });
+      await fetchWorkRequests();
+    } catch (e: unknown) {
+      toast({ title: "Rejection failed", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    }
+  };
+
+  const startWork = async (id: string) => {
+    try {
+      const { error } = await supabase.rpc("start_work", {
+        approved_id: id, started_by_user: "Admin",
+      });
+      if (error) throw error;
+      toast({ title: "Work Started", description: "Request is now in progress" });
+      await fetchWorkRequests();
+    } catch (e: unknown) {
+      toast({ title: "Failed to start work", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    }
+  };
+
+  const completeWork = async (id: string, hours: number, notes: string) => {
+    try {
+      const { error } = await supabase.rpc("complete_work", {
+        started_id: id, completed_by_user: "Admin",
+        actual_hours_worked: hours, notes: notes.trim() || undefined,
+      });
+      if (error) throw error;
+      toast({ title: "Completed", description: "Work order marked as complete" });
+      await fetchWorkRequests();
+    } catch (e: unknown) {
+      toast({ title: "Failed to complete", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    }
+  };
 
   const filteredRequests = requests.filter(req => {
     const matchesSearch = req.title.toLowerCase().includes(searchTerm.toLowerCase()) ||

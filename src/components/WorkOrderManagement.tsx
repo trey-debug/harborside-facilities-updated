@@ -211,8 +211,8 @@ export const WorkOrderManagement = () => {
       if (error) throw error;
       setRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "paused" as const } : r));
       toast({ title: "Paused", description: `${req.work_order_id || req.title} has been paused.` });
-    } catch {
-      toast({ title: "Error", description: "Failed to pause work order", variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Failed to pause", description: e instanceof Error ? e.message : "Could not pause work order", variant: "destructive" });
     }
   };
 
@@ -222,8 +222,8 @@ export const WorkOrderManagement = () => {
       if (error) throw error;
       setRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "in_progress" as const } : r));
       toast({ title: "Resumed", description: `${req.work_order_id || req.title} is back in progress.` });
-    } catch {
-      toast({ title: "Error", description: "Failed to resume work order", variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Failed to resume", description: e instanceof Error ? e.message : "Could not resume work order", variant: "destructive" });
     }
   };
 
@@ -233,8 +233,8 @@ export const WorkOrderManagement = () => {
       if (error) throw error;
       setRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: "in_progress" as const, started_at: new Date().toISOString(), started_by: "Admin" } : r));
       toast({ title: "Work Started", description: `${req.work_order_id || req.title} is now in progress.` });
-    } catch {
-      toast({ title: "Error", description: "Failed to start work", variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Failed to start work", description: e instanceof Error ? e.message : "Could not start work", variant: "destructive" });
     }
   };
 
@@ -308,8 +308,8 @@ export const WorkOrderManagement = () => {
         } : r));
         toast({ title: "Approved", description: `${approveTarget.work_order_id || approveTarget.title} has been approved.` });
         setApproveTarget(null);
-      } catch {
-        toast({ title: "Error", description: "Failed to approve work order", variant: "destructive" });
+      } catch (e: unknown) {
+        toast({ title: "Approval failed", description: e instanceof Error ? e.message : "Failed to approve work order", variant: "destructive" });
       } finally { setSubmitting(false); }
     };
 
@@ -416,8 +416,8 @@ export const WorkOrderManagement = () => {
         setRequests(prev => prev.map(r => r.id === rejectTarget.id ? { ...r, status: "rejected" as const, rejected_by: "Admin", rejected_at: new Date().toISOString(), rejected_reason: reason.trim() } : r));
         toast({ title: "Rejected", description: `${rejectTarget.work_order_id || rejectTarget.title} has been rejected.` });
         setRejectTarget(null);
-      } catch {
-        toast({ title: "Error", description: "Failed to reject work order", variant: "destructive" });
+      } catch (e: unknown) {
+        toast({ title: "Rejection failed", description: e instanceof Error ? e.message : "Failed to reject work order", variant: "destructive" });
       } finally { setSubmitting(false); }
     };
 
@@ -514,8 +514,8 @@ export const WorkOrderManagement = () => {
         } : r));
         toast({ title: "Completed", description: `${completeTarget.work_order_id || completeTarget.title} marked as complete.` });
         setCompleteTarget(null);
-      } catch {
-        toast({ title: "Error", description: "Failed to complete work order", variant: "destructive" });
+      } catch (e: unknown) {
+        toast({ title: "Completion failed", description: e instanceof Error ? e.message : "Failed to complete work order", variant: "destructive" });
       } finally { setSubmitting(false); }
     };
 
